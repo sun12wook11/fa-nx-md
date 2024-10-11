@@ -1,0 +1,33 @@
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 80
+
+deployment:
+  mariadb:
+    name: k8s-mariadb-deploy
+    app: k8s-mariadb
+    image: mariadb
+    tags: 10.6.19-focal
+    port: 3306
+    secret: mariadb-secret
+
+fastapi:
+  name: k8s-fastapi-deploy
+  app: k8s-fastapi
+  image: sun12wook11/k8s-fastapi
+  tags: v2
+  port: 8000
+
+
+fanginx:
+  name: k8s-fanginx-deploy
+  app: k8s-fanginx
+  image: sun12wook11/k8s-fanginx
+  tags: v2
+  port: 80
+
+
+configmap:
+  name: fanginx-config

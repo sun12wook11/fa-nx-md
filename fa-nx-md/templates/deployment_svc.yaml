@@ -1,0 +1,144 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-fastapi-deploy
+  labels:
+    app: k8s-fastapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-fastapi
+  template:
+    metadata:
+      name: k8s-fastapi
+      labels:
+        app: k8s-fastapi
+    spec:
+      containers:
+        - name: k8s-fastapi
+          image: sun12wook11/k8s-fastapi:v2
+          ports:
+            - containerPort: 80
+              protocol: TCP
+
+
+---
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-fanginx-deploy
+  labels:
+    app: k8s-fanginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-fanginx
+  template:
+    metadata:
+      name: k8s-fanginx
+      labels:
+        app: k8s-fanginx
+    spec:
+      containers:
+        - name: k8s-fanginx
+          image: sun12wook11/k8s-fanginx:v2
+          ports:
+            - containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /etc/nginx/conf.d
+              name: nginx-config
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: fanginx-config
+
+
+---
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-mariadb-deploy
+  labels:
+    app: k8s-mariadb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: k8s-mariadb
+  template:
+    metadata:
+      name: k8s-mariadb
+      labels:
+        app: k8s-mariadb
+    spec:
+      containers:
+        - name: k8s-mariadb
+          image: mariadb:10.6.19-focal
+          ports:
+            - containerPort: 3306
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                name: mariadb-secret
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mariadb-storage
+      volumes:
+        - name: mariadb-storage
+          emptyDir: {}
+
+
+---
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-fastapi-svc
+spec:
+  selector:
+    app: k8s-fastapi
+  ports:
+    - port: 8000
+      protocol: TCP
+      targetPort: 8000
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-fanginx-svc
+spec:
+  selector:
+    app: k8s-fanginx
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+
+
+---
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-mariadb-svc
+spec:
+  selector:
+    app: k8s-mariadb
+  ports:
+    - port: 3306
+      protocol: TCP
+      targetPort: 3306
